@@ -61,14 +61,16 @@ class OutputUnit : public Consumer
     ~OutputUnit() = default;
     void set_out_link(NetworkLink *link);
     void set_credit_link(CreditLink *credit_link);
-    void wakeup();
+    void wakeup(std::set<int>& selected_vcs);
     flitBuffer* getOutQueue();
     void print(std::ostream& out) const {};
     void decrement_credit(int out_vc);
     void increment_credit(int out_vc);
     bool has_credit(int out_vc);
     bool has_free_vc(int vnet);
-    int select_free_vc(int vnet);
+    // int select_free_vc(int vnet);
+    int select_free_vc(int vnet, std::set<int>& selected_vcs);
+
 
     inline PortDirection get_direction() { return m_direction; }
 

@@ -71,7 +71,8 @@ class Router : public BasicRouter, public Consumer
 
     ~Router() = default;
 
-    void wakeup();
+    // void wakeup();
+    void wakeup(std::set<int>& selected_vcs);
     void print(std::ostream& out) const {};
 
     void init();

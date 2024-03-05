@@ -31,6 +31,8 @@
 
 #include "mem/ruby/network/garnet/OutputUnit.hh"
 
+#include <set>
+
 #include "debug/RubyNetwork.hh"
 #include "mem/ruby/network/garnet/Credit.hh"
 #include "mem/ruby/network/garnet/CreditLink.hh"
@@ -107,19 +109,40 @@ OutputUnit::has_free_vc(int vnet)
 }
 
 // Assign a free output VC to the winner of Switch Allocation
-int
-OutputUnit::select_free_vc(int vnet)
+int OutputUnit::select_free_vc(int vnet, std::set<int>& selected_vcs)
 {
-    int vc_base = vnet*m_vc_per_vnet;
+   int vc_base = vnet*m_vc_per_vnet;
+   if (selected_vcs.size() != 0){
+        for (int vc = 0; vc < m_vc_per_vnet; vc++) {
+            if (is_vc_idle(vc, curTick()) &&
+                (selected_vcs.find(vc) != selected_vcs.end())) {
+                outVcState[vc].setState(ACTIVE_, curTick());
+                return vc;
+            }
+        }
+    }
+    else{
     for (int vc = vc_base; vc < vc_base + m_vc_per_vnet; vc++) {
         if (is_vc_idle(vc, curTick())) {
             outVcState[vc].setState(ACTIVE_, curTick());
             return vc;
         }
     }
-
+ }
     return -1;
 }
+//ints OutputUnit::select_free_vc(int vnet)
+// {
+//     int vc_base = vnet*m_vc_per_vnet;
+//     for (int vc = vc_base; vc < vc_base + m_vc_per_vnet; vc++) {
+//         if (is_vc_idle(vc, curTick())) {
+//             outVcState[vc].setState(ACTIVE_, curTick());
+//             return vc;
+//         }
+//     }
+
+//     return -1;
+// }
 
 /*
  * The wakeup function of the OutputUnit reads the credit signal from the
