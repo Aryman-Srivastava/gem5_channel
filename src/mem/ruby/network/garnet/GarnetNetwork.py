@@ -52,6 +52,9 @@ class GarnetNetwork(RubyNetwork):
     garnet_deadlock_threshold = Param.UInt32(
         50000, "network-level deadlock threshold"
     )
+    selected_vcs = VectorParam.UInt32(
+        [], "selected VCs for each virtual network"
+    )
 
 
 class GarnetNetworkInterface(ClockedObject):

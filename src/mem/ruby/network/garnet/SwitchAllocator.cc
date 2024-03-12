@@ -31,8 +31,6 @@
 
 #include "mem/ruby/network/garnet/SwitchAllocator.hh"
 
-#include <set>
-
 #include "debug/RubyNetwork.hh"
 #include "mem/ruby/network/garnet/GarnetNetwork.hh"
 #include "mem/ruby/network/garnet/InputUnit.hh"
@@ -48,7 +46,8 @@ namespace ruby
 namespace garnet
 {
 
-SwitchAllocator::SwitchAllocator(Router *router) : Consumer(router)
+SwitchAllocator::SwitchAllocator(Router *router)
+    : Consumer(router)
 {
     m_router = router;
     m_num_vcs = m_router->get_num_vcs();
@@ -89,12 +88,10 @@ SwitchAllocator::init()
  */
 
 void
-// SwitchAllocator::wakeup()
-SwitchAllocator::wakeup(std::set<int>& selected_vcs)
+SwitchAllocator::wakeup()
 {
     arbitrate_inports(); // First stage of allocation
-    // arbitrate_outports(); // Second stage of allocation
-    arbitrate_outports(selected_vcs);
+    arbitrate_outports(); // Second stage of allocation
 
     clear_request_vector();
     check_for_wakeup();
@@ -129,7 +126,8 @@ SwitchAllocator::arbitrate_inports()
 
                 // check if the flit in this InputVC is allowed to be sent
                 // send_allowed conditions described in that function.
-                bool make_request = send_allowed(inport, invc, outport, outvc);
+                bool make_request =
+                    send_allowed(inport, invc, outport, outvc);
 
                 if (make_request) {
                     m_input_arbiter_activity++;
@@ -160,8 +158,15 @@ SwitchAllocator::arbitrate_inports()
  * to the upstream router. For HEAD_TAIL/TAIL flits, is_free_signal in the
  * credit is set to true.
  */
-void SwitchAllocator::arbitrate_outports(std::set<int>& selected_vcs)
-// void SwitchAllocator::arbitrate_outports()
+
+void
+SwitchAllocator::processSet(std::vector<int> vcs){
+    std::vector<int> selected_vcs;
+    selected_vcs = vcs;
+}
+
+void
+SwitchAllocator::arbitrate_outports()
 {
     // Now there are a set of input vc requests for output vcs.
     // Again do round robin arbitration on these requests
@@ -184,7 +189,6 @@ void SwitchAllocator::arbitrate_outports(std::set<int>& selected_vcs)
                 if (outvc == -1) {
                     // VC Allocation - select any free VC from outport
                     outvc = vc_allocate(outport, inport, invc, selected_vcs);
-                    // outvc = vc_allocate(outport, inport, invc);
                 }
 
                 // remove flit from Input VC
@@ -341,15 +345,14 @@ SwitchAllocator::send_allowed(int inport, int invc, int outport, int outvc)
 
 // Assign a free VC to the winner of the output port.
 int
-SwitchAllocator::vc_allocate(int outport, int inport, int invc
-, std::set<int>& selected_vcs)
-// SwitchAllocator::vc_allocate(int outport, int inport, int invc)
+SwitchAllocator::vc_allocate(int outport, int inport, int invc,
+    std::vector<int> selected_vcs)
 {
     // Select a free VC from the output port
+    // int outvc =
+    //     m_router->getOutputUnit(outport)->select_free_vc(get_vnet(invc));
     int outvc = m_router->getOutputUnit(outport)->
         select_free_vc(get_vnet(invc), selected_vcs);
-    // int outvc = m_router->getOutputUnit(outport)->
-    //      select_free_vc(get_vnet(invc));
 
     // has to get a valid VC since it checked before performing SA
     assert(outvc != -1);

@@ -58,19 +58,17 @@ namespace gem5
 namespace ruby
 {
 
-class Consumer : public gem5::EventFunctionWrapper
+class Consumer
 {
   public:
-    Consumer(ClockedObject *_em,
-      Event::Priority ev_prio =
-        Event::Default_Pri,
-      std::set<int>& selected_vcs);
+    Consumer(ClockedObject *em,
+             Event::Priority ev_prio = Event::Default_Pri);
 
     virtual
     ~Consumer()
     { }
 
-    virtual void wakeup(std::set<int>& selected_vcs) = 0;
+    virtual void wakeup() = 0;
     virtual void print(std::ostream& out) const = 0;
     virtual void storeEventInfo(int info) {}
 
@@ -95,7 +93,7 @@ class Consumer : public gem5::EventFunctionWrapper
     ClockedObject *em;
 
     void scheduleNextWakeup();
-    void processCurrentEvent(ClockedObject *_em, std::set<int>& selected_vcs);
+    void processCurrentEvent();
 };
 
 

@@ -69,15 +69,14 @@ Router::init()
 }
 
 void
-// Router::wakeup()
-Router::wakeup(std::set<int>& selected_vcs)
+Router::wakeup()
 {
     DPRINTF(RubyNetwork, "Router %d woke up\n", m_id);
     assert(clockEdge() == curTick());
 
     // check for incoming flits
     for (int inport = 0; inport < m_input_unit.size(); inport++) {
-        m_input_unit[inport]->wakeup(selected_vcs);
+        m_input_unit[inport]->wakeup();
     }
 
     // check for incoming credits
@@ -87,15 +86,14 @@ Router::wakeup(std::set<int>& selected_vcs)
     // if we want the credit update to take place after SA, this loop should
     // be moved after the SA request
     for (int outport = 0; outport < m_output_unit.size(); outport++) {
-        m_output_unit[outport]->wakeup(selected_vcs);
+        m_output_unit[outport]->wakeup();
     }
 
     // Switch Allocation
-    switchAllocator.wakeup(selected_vcs);
-    // switchAllocator.wakeup();
+    switchAllocator.wakeup();
 
     // Switch Traversal
-    crossbarSwitch.wakeup(selected_vcs);
+    crossbarSwitch.wakeup();
 }
 
 void

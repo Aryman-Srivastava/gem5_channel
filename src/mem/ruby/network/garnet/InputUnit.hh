@@ -33,7 +33,6 @@
 #define __MEM_RUBY_NETWORK_GARNET_0_INPUTUNIT_HH__
 
 #include <iostream>
-#include <set>
 #include <vector>
 
 #include "mem/ruby/common/Consumer.hh"
@@ -59,7 +58,7 @@ class InputUnit : public Consumer
     InputUnit(int id, PortDirection direction, Router *router);
     ~InputUnit() = default;
 
-    void wakeup(std::set<int>& selected_vcs);
+    void wakeup();
     void print(std::ostream& out) const {};
 
     inline PortDirection get_direction() { return m_direction; }

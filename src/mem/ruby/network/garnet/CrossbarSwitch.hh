@@ -55,7 +55,7 @@ class CrossbarSwitch : public Consumer
   public:
     CrossbarSwitch(Router *router);
     ~CrossbarSwitch() = default;
-    void wakeup(std::set<int> &selected_vcs);
+    void wakeup();
     void init();
     void print(std::ostream& out) const {};
 

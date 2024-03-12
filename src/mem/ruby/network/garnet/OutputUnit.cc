@@ -30,15 +30,11 @@
 
 
 #include "mem/ruby/network/garnet/OutputUnit.hh"
-
-#include <set>
-
 #include "debug/RubyNetwork.hh"
 #include "mem/ruby/network/garnet/Credit.hh"
 #include "mem/ruby/network/garnet/CreditLink.hh"
 #include "mem/ruby/network/garnet/Router.hh"
 #include "mem/ruby/network/garnet/flitBuffer.hh"
-
 namespace gem5
 {
 
@@ -108,41 +104,47 @@ OutputUnit::has_free_vc(int vnet)
     return false;
 }
 
-// Assign a free output VC to the winner of Switch Allocation
-int OutputUnit::select_free_vc(int vnet, std::set<int>& selected_vcs)
+int OutputUnit::select_free_vc(int vnet, const std::vector<int>& selected_vcs)
 {
-   int vc_base = vnet*m_vc_per_vnet;
-   if (selected_vcs.size() != 0){
-        for (int vc = 0; vc < m_vc_per_vnet; vc++) {
-            if (is_vc_idle(vc, curTick()) &&
-                (selected_vcs.find(vc) != selected_vcs.end())) {
+    int vc_base = vnet * m_vc_per_vnet;
+
+    // If selected_vcs is not empty, iterate through selected VCs
+    if (!selected_vcs.empty()) {
+        for (int vc : selected_vcs) {
+            if (vc >= vc_base && vc < vc_base + m_vc_per_vnet
+                && is_vc_idle(vc, curTick())) {
                 outVcState[vc].setState(ACTIVE_, curTick());
                 return vc;
             }
         }
     }
-    else{
+    // If selected_vcs is empty, iterate through all VCs in the virtual network
+    else {
+        for (int vc = vc_base; vc < vc_base + m_vc_per_vnet; vc++) {
+            if (is_vc_idle(vc, curTick())) {
+                outVcState[vc].setState(ACTIVE_, curTick());
+                return vc;
+            }
+        }
+    }
+
+    return -1; // No free VC found
+}
+/*
+Assign a free output VC to the winner of Switch Allocation
+int
+OutputUnit::select_free_vc(int vnet)
+{
+    int vc_base = vnet*m_vc_per_vnet;
     for (int vc = vc_base; vc < vc_base + m_vc_per_vnet; vc++) {
         if (is_vc_idle(vc, curTick())) {
             outVcState[vc].setState(ACTIVE_, curTick());
             return vc;
         }
     }
- }
     return -1;
 }
-//ints OutputUnit::select_free_vc(int vnet)
-// {
-//     int vc_base = vnet*m_vc_per_vnet;
-//     for (int vc = vc_base; vc < vc_base + m_vc_per_vnet; vc++) {
-//         if (is_vc_idle(vc, curTick())) {
-//             outVcState[vc].setState(ACTIVE_, curTick());
-//             return vc;
-//         }
-//     }
-
-//     return -1;
-// }
+*/
 
 /*
  * The wakeup function of the OutputUnit reads the credit signal from the

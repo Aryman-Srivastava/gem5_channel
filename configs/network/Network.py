@@ -123,6 +123,12 @@ def define_options(parser):
         help="""SimpleNetwork links uses a separate physical
             channel for each virtual network""",
     )
+    parser.add_argument(
+        "--selected-vcs",
+        action="store",
+        default=False,
+        help="Selection of vcs for network, incase of priority selections",
+    )
 
 
 def create_network(options, ruby):

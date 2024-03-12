@@ -33,7 +33,6 @@
 #define __MEM_RUBY_NETWORK_GARNET_0_SWITCHALLOCATOR_HH__
 
 #include <iostream>
-#include <set>
 #include <vector>
 
 #include "mem/ruby/common/Consumer.hh"
@@ -56,19 +55,18 @@ class SwitchAllocator : public Consumer
 {
   public:
     SwitchAllocator(Router *router);
-    void wakeup(std::set<int>& selected_vcs);
-    // void wakeup();
+    void wakeup();
     void init();
     void clear_request_vector();
     void check_for_wakeup();
     int get_vnet (int invc);
     void print(std::ostream& out) const {};
     void arbitrate_inports();
-    void arbitrate_outports(std::set<int>& selected_vcs);
-    // void arbitrate_outports();
+    void arbitrate_outports();
     bool send_allowed(int inport, int invc, int outport, int outvc);
     int vc_allocate(int outport, int inport, int invc,
-      std::set<int>& selected_vcs);
+      std::vector<int> selected_vcs);
+    static void processSet(std::vector<int> vcs);
 
     inline double
     get_input_arbiter_activity()
@@ -94,6 +92,7 @@ class SwitchAllocator : public Consumer
     std::vector<int> m_round_robin_inport;
     std::vector<int> m_port_requests;
     std::vector<int> m_vc_winners;
+    std::vector<int> selected_vcs;
 };
 
 } // namespace garnet

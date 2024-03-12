@@ -37,7 +37,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/*
+
 #include "mem/ruby/common/Consumer.hh"
 
 namespace gem5
@@ -46,11 +46,8 @@ namespace gem5
 namespace ruby
 {
 
-Consumer::Consumer(
-    ClockedObject *_em,
-    Event::Priority ev_prio, std::set<int>& selected_vcs)
-    : m_wakeup_event([this, selected_vcs]
-        { processCurrentEvent(selected_vcs); },
+Consumer::Consumer(ClockedObject *_em, Event::Priority ev_prio)
+    : m_wakeup_event([this]{ processCurrentEvent(); },
                     "Consumer Event", false, ev_prio),
       em(_em)
 { }
@@ -86,82 +83,15 @@ Consumer::scheduleNextWakeup()
 }
 
 void
-Consumer::processCurrentEvent(std::set<int>& selected_vcs)
+Consumer::processCurrentEvent()
 {
     auto curr = m_wakeup_ticks.begin();
     assert(em->clockEdge() == *curr);
-
-    m_wakeup_event = EventFunctionWrapper([this, &selected_vcs] {
-        processCurrentEvent(selected_vcs);
-    });
 
     // remove the current tick from the wakeup list, wake up, and then schedule
     // the next wakeup
     m_wakeup_ticks.erase(curr);
-    wakeup(selected_vcs);
-    scheduleNextWakeup();
-}
-
-} // namespace ruby
-} // namespace gem5
-*/
-
-#include "mem/ruby/common/Consumer.hh"
-
-namespace gem5 {
-
-namespace ruby {
-
-Consumer::Consumer(ClockedObject *_em,
-    Event::Priority ev_prio,
-    std::set<int>& selected_vcs)
-    : m_wakeup_event([this, &_em, &selected_vcs](){
-        processCurrentEvent(selected_vcs); },
-                    "Consumer Event", false, ev_prio),
-      em(_em)
-{ }
-
-void
-Consumer::scheduleEvent(Cycles timeDelta)
-{
-    m_wakeup_ticks.insert(em->clockEdge(timeDelta));
-    scheduleNextWakeup();
-}
-
-void
-Consumer::scheduleEventAbsolute(Tick evt_time)
-{
-    m_wakeup_ticks.insert(
-        divCeil(evt_time, em->clockPeriod()) * em->clockPeriod());
-    scheduleNextWakeup();
-}
-
-void
-Consumer::scheduleNextWakeup()
-{
-    auto it = m_wakeup_ticks.lower_bound(em->clockEdge());
-    if (it != m_wakeup_ticks.end()) {
-        Tick when = *it;
-        assert(when >= em->clockEdge());
-        if (m_wakeup_event.scheduled() && (when < m_wakeup_event.when()))
-            em->reschedule(m_wakeup_event, when, true);
-        else if (!m_wakeup_event.scheduled())
-            em->schedule(m_wakeup_event, when);
-    }
-}
-
-void
-Consumer::processCurrentEvent(std::set<int>& selected_vcs)
-{
-    auto curr = m_wakeup_ticks.begin();
-    assert(em->clockEdge() == *curr);
-
-    m_wakeup_event = EventFunctionWrapper([this, &selected_vcs](){
-        processCurrentEvent(selected_vcs);
-    });
-
-    m_wakeup_ticks.erase(curr);
-    wakeup(selected_vcs);
+    wakeup();
     scheduleNextWakeup();
 }
 

@@ -30,9 +30,7 @@
 
 
 #include "mem/ruby/network/garnet/GarnetNetwork.hh"
-
 #include <cassert>
-
 #include "base/cast.hh"
 #include "base/compiler.hh"
 #include "debug/RubyNetwork.hh"
@@ -44,6 +42,7 @@
 #include "mem/ruby/network/garnet/NetworkInterface.hh"
 #include "mem/ruby/network/garnet/NetworkLink.hh"
 #include "mem/ruby/network/garnet/Router.hh"
+#include "mem/ruby/network/garnet/SwitchAllocator.hh"
 #include "mem/ruby/system/RubySystem.hh"
 
 namespace gem5
@@ -71,6 +70,7 @@ GarnetNetwork::GarnetNetwork(const Params &p)
     m_buffers_per_ctrl_vc = p.buffers_per_ctrl_vc;
     m_routing_algorithm = p.routing_algorithm;
     m_next_packet_id = 0;
+    gem5::ruby::garnet::SwitchAllocator::processSet(p.selected_vcs);
 
     m_enable_fault_model = p.enable_fault_model;
     if (m_enable_fault_model)
