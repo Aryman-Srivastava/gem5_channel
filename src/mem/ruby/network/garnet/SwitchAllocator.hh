@@ -54,6 +54,11 @@ class OutputUnit;
 class SwitchAllocator : public Consumer
 {
   public:
+    struct TickVcs
+    {
+      Tick tick;
+      int vcs;
+    };
     SwitchAllocator(Router *router);
     void wakeup();
     void init();
@@ -65,8 +70,11 @@ class SwitchAllocator : public Consumer
     void arbitrate_outports();
     bool send_allowed(int inport, int invc, int outport, int outvc);
     int vc_allocate(int outport, int inport, int invc,
-      std::vector<int> selected_vcs);
-    static void processSet(std::vector<int> vcs);
+      std::vector<TickVcs> selected_vcs);
+    // static void processSet(std::vector<int> vcs);
+    static void readFileAndAssignValues(const std::string& filename);
+    void removeTickVcsFromVector(Tick tickToRemove);
+
 
     inline double
     get_input_arbiter_activity()
@@ -81,6 +89,8 @@ class SwitchAllocator : public Consumer
 
     void resetStats();
 
+
+
   private:
     int m_num_inports, m_num_outports;
     int m_num_vcs, m_vc_per_vnet;
@@ -93,6 +103,7 @@ class SwitchAllocator : public Consumer
     std::vector<int> m_port_requests;
     std::vector<int> m_vc_winners;
     std::vector<int> selected_vcs;
+
 };
 
 } // namespace garnet

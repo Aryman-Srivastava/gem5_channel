@@ -158,12 +158,52 @@ SwitchAllocator::arbitrate_inports()
  * to the upstream router. For HEAD_TAIL/TAIL flits, is_free_signal in the
  * credit is set to true.
  */
+// std::vector<int> selected_vcs;
+// void processSet(const std::vector<int>& vcs) {
+//     selected_vcs = vcs;
+// }
 
-void
-SwitchAllocator::processSet(std::vector<int> vcs){
-    std::vector<int> selected_vcs;
-    selected_vcs = vcs;
+// struct TickVcs {
+//     Tick tick;
+//     int vcs;
+// };
+
+std::vector<SwitchAllocator::TickVcs>& tickVcsVector;
+
+// Function to read file and populate vector
+void readFileAndAssignValues(const std::string& filename) {
+    std::ifstream file(filename);
+    std::string line;
+
+    // Read each line from the file
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        char comma;
+        Tick tick;
+        int vcs;
+
+        // Parse tick and vcs from the line
+        if (iss >> tick >> comma >> vcs) {
+            // Create a TickVcs object and add it to the vector
+            tickVcsVector.push_back({tick, vcs});
+        }
+    }
+
+    file.close();
 }
+
+// Function to remove tick and vcs values from the vector
+void removeTickVcsFromVector(Tick tickToRemove) {
+    // Iterate through the vector and remove elements with matching tick
+    for (auto it = tickVcsVector.begin(); it != tickVcsVector.end();) {
+        if (it->tick == tickToRemove) {
+            it = tickVcsVector.erase(it); // Remove element
+        } else {
+            ++it;
+        }
+    }
+}
+
 
 void
 SwitchAllocator::arbitrate_outports()
@@ -188,7 +228,11 @@ SwitchAllocator::arbitrate_outports()
                 int outvc = input_unit->get_outvc(invc);
                 if (outvc == -1) {
                     // VC Allocation - select any free VC from outport
-                    outvc = vc_allocate(outport, inport, invc, selected_vcs);
+                    // outvc = vc_allocate(outport, inport,
+                    // invc, selected_vcs);
+                    outvc = vc_allocate(outport, inport, invc,
+                        tickVcsVector);
+                    removeTickVcsFromVector(curTick());
                 }
 
                 // remove flit from Input VC
@@ -346,13 +390,14 @@ SwitchAllocator::send_allowed(int inport, int invc, int outport, int outvc)
 // Assign a free VC to the winner of the output port.
 int
 SwitchAllocator::vc_allocate(int outport, int inport, int invc,
-    std::vector<int> selected_vcs)
+    std::vector<SwitchAllocator::TickVcs> selected_vcs)
 {
     // Select a free VC from the output port
     // int outvc =
     //     m_router->getOutputUnit(outport)->select_free_vc(get_vnet(invc));
     int outvc = m_router->getOutputUnit(outport)->
         select_free_vc(get_vnet(invc), selected_vcs);
+
 
     // has to get a valid VC since it checked before performing SA
     assert(outvc != -1);

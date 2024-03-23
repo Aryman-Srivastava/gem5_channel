@@ -104,17 +104,19 @@ OutputUnit::has_free_vc(int vnet)
     return false;
 }
 
-int OutputUnit::select_free_vc(int vnet, const std::vector<int>& selected_vcs)
+int OutputUnit::select_free_vc(int vnet,
+     const std::vector<SwitchAllocator::TickVcs>& selected_vcs)
 {
     int vc_base = vnet * m_vc_per_vnet;
 
     // If selected_vcs is not empty, iterate through selected VCs
     if (!selected_vcs.empty()) {
-        for (int vc : selected_vcs) {
-            if (vc >= vc_base && vc < vc_base + m_vc_per_vnet
-                && is_vc_idle(vc, curTick())) {
-                outVcState[vc].setState(ACTIVE_, curTick());
-                return vc;
+        for (const auto& tickVcs : selected_vcs) {
+            if (tickVcs.vcs >= vc_base && tickVcs.vcs < vc_base + m_vc_per_vnet
+                && is_vc_idle(tickVcs.vcs, curTick())
+                    && tickVcs.tick == curTick()) {
+                outVcState[tickVcs.vcs].setState(ACTIVE_, curTick());
+                return tickVcs.vcs;
             }
         }
     }
