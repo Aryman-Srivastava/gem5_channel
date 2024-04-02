@@ -52,10 +52,8 @@ class GarnetNetwork(RubyNetwork):
     garnet_deadlock_threshold = Param.UInt32(
         50000, "network-level deadlock threshold"
     )
-    # selected_vcs = VectorParam.UInt32(
-    #     [], "selected VCs for each virtual network"
-    # )
-    selected_vcs_location = Params.String("", "selected VCs file location")
+    vcs = VectorParam.Int32([], "Priority wise Vcs connection")
+    selected_vcs_location = Param.String("", "selected VCs file location")
 
 
 class GarnetNetworkInterface(ClockedObject):

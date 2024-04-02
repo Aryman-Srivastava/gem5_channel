@@ -72,6 +72,7 @@ GarnetNetwork::GarnetNetwork(const Params &p)
     m_next_packet_id = 0;
     gem5::ruby::garnet::SwitchAllocator::
         readFileAndAssignValues(p.selected_vcs_location);
+    gem5::ruby::garnet::SwitchAllocator::processSet(p.vcs);
 
     m_enable_fault_model = p.enable_fault_model;
     if (m_enable_fault_model)

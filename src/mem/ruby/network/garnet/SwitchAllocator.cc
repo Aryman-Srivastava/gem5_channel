@@ -30,7 +30,6 @@
 
 
 #include "mem/ruby/network/garnet/SwitchAllocator.hh"
-
 #include "debug/RubyNetwork.hh"
 #include "mem/ruby/network/garnet/GarnetNetwork.hh"
 #include "mem/ruby/network/garnet/InputUnit.hh"
@@ -158,20 +157,20 @@ SwitchAllocator::arbitrate_inports()
  * to the upstream router. For HEAD_TAIL/TAIL flits, is_free_signal in the
  * credit is set to true.
  */
-// std::vector<int> selected_vcs;
-// void processSet(const std::vector<int>& vcs) {
-//     selected_vcs = vcs;
-// }
+std::vector<int> SwitchAllocator::priority_vcs;
+void SwitchAllocator::processSet(std::vector<int> vcs) {
+    priority_vcs = vcs;
+}
 
 // struct TickVcs {
 //     Tick tick;
 //     int vcs;
 // };
 
-std::vector<SwitchAllocator::TickVcs>& tickVcsVector;
+std::vector<TickVcs> SwitchAllocator::tickVcsVector;
 
 // Function to read file and populate vector
-void readFileAndAssignValues(const std::string& filename) {
+void SwitchAllocator::readFileAndAssignValues(std::string filename) {
     std::ifstream file(filename);
     std::string line;
 
@@ -188,12 +187,11 @@ void readFileAndAssignValues(const std::string& filename) {
             tickVcsVector.push_back({tick, vcs});
         }
     }
-
     file.close();
 }
 
 // Function to remove tick and vcs values from the vector
-void removeTickVcsFromVector(Tick tickToRemove) {
+void SwitchAllocator::removeTickVcsFromVector(Tick tickToRemove) {
     // Iterate through the vector and remove elements with matching tick
     for (auto it = tickVcsVector.begin(); it != tickVcsVector.end();) {
         if (it->tick == tickToRemove) {
@@ -204,14 +202,39 @@ void removeTickVcsFromVector(Tick tickToRemove) {
     }
 }
 
+void SwitchAllocator::addMissingNumbers(std::vector<int>& numbers,
+    int maxRange) {
+    // Sort the input vector
+    std::sort(numbers.begin(), numbers.end());
+
+    // Initialize a vector to store missing numbers
+    std::vector<int> missingNumbers;
+
+    // Iterate through the range and add missing numbers to the vector
+    for (int i = 0; i < maxRange; ++i) {
+        if (!binary_search(numbers.begin(), numbers.end(), i)) {
+            missingNumbers.push_back(i);
+        }
+    }
+
+    // Concatenate the missing numbers to the input vector
+    numbers.insert(numbers.end(), missingNumbers.begin(),
+        missingNumbers.end());
+}
+
+
 
 void
 SwitchAllocator::arbitrate_outports()
 {
+
+    addMissingNumbers(priority_vcs, m_num_outports);
+
     // Now there are a set of input vc requests for output vcs.
     // Again do round robin arbitration on these requests
     // Independent arbiter at each output port
-    for (int outport = 0; outport < m_num_outports; outport++) {
+    // for (int outport = 0; outport < m_num_outports; outport++) {
+    for (int outport : priority_vcs) {
         int inport = m_round_robin_inport[outport];
 
         for (int inport_iter = 0; inport_iter < m_num_inports;
@@ -390,7 +413,7 @@ SwitchAllocator::send_allowed(int inport, int invc, int outport, int outvc)
 // Assign a free VC to the winner of the output port.
 int
 SwitchAllocator::vc_allocate(int outport, int inport, int invc,
-    std::vector<SwitchAllocator::TickVcs> selected_vcs)
+    std::vector<TickVcs> selected_vcs)
 {
     // Select a free VC from the output port
     // int outvc =

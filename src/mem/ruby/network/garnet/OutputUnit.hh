@@ -40,6 +40,7 @@
 #include "mem/ruby/network/garnet/CommonTypes.hh"
 #include "mem/ruby/network/garnet/NetworkLink.hh"
 #include "mem/ruby/network/garnet/OutVcState.hh"
+#include "mem/ruby/network/garnet/SwitchAllocator.hh"
 
 namespace gem5
 {
@@ -69,8 +70,8 @@ class OutputUnit : public Consumer
     bool has_credit(int out_vc);
     bool has_free_vc(int vnet);
     // int select_free_vc(int vnet);
-    int select_free_vc(int vnet, const
-      std::vector<SwitchAllocator::TickVcs>& selected_vcs);
+    int select_free_vc(int vnet,
+      std::vector<TickVcs>& selected_vcs);
 
     inline PortDirection get_direction() { return m_direction; }
 

@@ -38,6 +38,7 @@
 #include "mem/ruby/network/Network.hh"
 #include "mem/ruby/network/fault_model/FaultModel.hh"
 #include "mem/ruby/network/garnet/CommonTypes.hh"
+#include "mem/ruby/network/garnet/SwitchAllocator.hh"
 #include "params/GarnetNetwork.hh"
 
 namespace gem5

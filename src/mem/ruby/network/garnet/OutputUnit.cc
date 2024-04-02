@@ -105,7 +105,7 @@ OutputUnit::has_free_vc(int vnet)
 }
 
 int OutputUnit::select_free_vc(int vnet,
-     const std::vector<SwitchAllocator::TickVcs>& selected_vcs)
+     std::vector<TickVcs>& selected_vcs)
 {
     int vc_base = vnet * m_vc_per_vnet;
 

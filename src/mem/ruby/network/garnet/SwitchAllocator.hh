@@ -32,7 +32,11 @@
 #ifndef __MEM_RUBY_NETWORK_GARNET_0_SWITCHALLOCATOR_HH__
 #define __MEM_RUBY_NETWORK_GARNET_0_SWITCHALLOCATOR_HH__
 
+#include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "mem/ruby/common/Consumer.hh"
@@ -50,7 +54,6 @@ namespace garnet
 class Router;
 class InputUnit;
 class OutputUnit;
-
 struct TickVcs
 {
   Tick tick;
@@ -62,6 +65,7 @@ class SwitchAllocator : public Consumer
   public:
 
     SwitchAllocator(Router *router);
+
     void wakeup();
     void init();
     void clear_request_vector();
@@ -73,9 +77,11 @@ class SwitchAllocator : public Consumer
     bool send_allowed(int inport, int invc, int outport, int outvc);
     int vc_allocate(int outport, int inport, int invc,
       std::vector<TickVcs> selected_vcs);
-    static void processSet(std::vector<int> selected_vcs);
-    static void readFileAndAssignValues(const std::string& filename);
+    static void processSet(std::vector<int> vcs);
+    static void readFileAndAssignValues(std::string filename);
     static void removeTickVcsFromVector(Tick tickToRemove);
+    static void addMissingNumbers(std::vector<int>& numbers,
+      int maxRange);
 
 
     inline double
@@ -91,8 +97,6 @@ class SwitchAllocator : public Consumer
 
     void resetStats();
 
-
-
   private:
     int m_num_inports, m_num_outports;
     int m_num_vcs, m_vc_per_vnet;
@@ -104,8 +108,9 @@ class SwitchAllocator : public Consumer
     std::vector<int> m_round_robin_inport;
     std::vector<int> m_port_requests;
     std::vector<int> m_vc_winners;
-    static std::vector<int> selected_vcs;
+    static std::vector<int> priority_vcs;
     static std::vector<TickVcs> tickVcsVector;
+
 
 };
 

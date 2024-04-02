@@ -129,6 +129,12 @@ def define_options(parser):
         default=False,
         help="Selection of vcs for network, incase of priority selections",
     )
+    parser.add_argument(
+        "--vcs",
+        action="store",
+        default=False,
+        help="Priority wise Vcs connection",
+    )
 
 
 def create_network(options, ruby):
