@@ -51,14 +51,16 @@ class Router;
 class InputUnit;
 class OutputUnit;
 
+struct TickVcs
+{
+  Tick tick;
+  int vcs;
+};
+
 class SwitchAllocator : public Consumer
 {
   public:
-    struct TickVcs
-    {
-      Tick tick;
-      int vcs;
-    };
+
     SwitchAllocator(Router *router);
     void wakeup();
     void init();
@@ -71,9 +73,9 @@ class SwitchAllocator : public Consumer
     bool send_allowed(int inport, int invc, int outport, int outvc);
     int vc_allocate(int outport, int inport, int invc,
       std::vector<TickVcs> selected_vcs);
-    // static void processSet(std::vector<int> vcs);
+    static void processSet(std::vector<int> selected_vcs);
     static void readFileAndAssignValues(const std::string& filename);
-    void removeTickVcsFromVector(Tick tickToRemove);
+    static void removeTickVcsFromVector(Tick tickToRemove);
 
 
     inline double
@@ -102,7 +104,8 @@ class SwitchAllocator : public Consumer
     std::vector<int> m_round_robin_inport;
     std::vector<int> m_port_requests;
     std::vector<int> m_vc_winners;
-    std::vector<int> selected_vcs;
+    static std::vector<int> selected_vcs;
+    static std::vector<TickVcs> tickVcsVector;
 
 };
 
